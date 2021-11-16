@@ -1,0 +1,104 @@
+Parameters:
+  #General:
+  TargetStack:
+    Type: String
+    Description: The naming prefix for resources created by this template.
+    Default: WebApp1
+Resources:
+  fisrole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: fis.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/AmazonEC2FullAccess
+  fisroleDefaultPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ssm:SendCommand
+              - ssm:ListCommands
+              - ssm:CancelCommands
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: fisroleDefaultPolicy
+      Roles:
+        - Ref: fisrole
+  FISTemplateBurnCPU:
+    Type: AWS::FIS::ExperimentTemplate
+    Properties:
+      Description: Demo for injecting CPU stress via SSM
+      RoleArn:
+        Fn::GetAtt:
+          - fisrole
+          - Arn
+      StopConditions:
+        - Source: none
+      Tags:
+        Name: BurnCPUViaSSM
+      Targets:
+        instanceTargets:
+          ResourceTags: 
+            "Name" : "WebApp1"
+          ResourceType: aws:ec2:instance
+          SelectionMode: ALL          
+      Actions:
+        instanceActions:
+          ActionId: aws:ssm:send-command
+          Description: burn cpu vis SSM
+          Parameters:
+            documentArn:
+              Fn::Join:
+                - ""
+                - - "arn:aws:ssm:"
+                  - Ref: AWS::Region
+                  - ::document/AWSFIS-Run-CPU-Stress
+            documentParameters: '{"DurationSeconds":"300"}'
+            duration: PT2M
+          Targets:
+            Instances: instanceTargets
+  FISTemplateMemoryStress:
+    Type: AWS::FIS::ExperimentTemplate
+    Properties:
+      Description: Demo Memory stress via SSM
+      RoleArn:
+        Fn::GetAtt:
+          - fisrole
+          - Arn
+      StopConditions:
+        - Source: none
+      Tags:
+        Name: BurnMemoryViaSSM
+      Targets:
+        instanceTargets:
+          ResourceTags: 
+            "Name" : "WebApp1"
+          ResourceType: aws:ec2:instance
+          SelectionMode: ALL          
+      Actions:
+        instanceActions:
+          ActionId: aws:ssm:send-command
+          Description: burn Memory vis SSM
+          Parameters:
+            documentArn:
+              Fn::Join:
+                - ""
+                - - "arn:aws:ssm:"
+                  - Ref: AWS::Region
+                  - ::document/AWSFIS-Run-Memory-Stress
+            documentParameters: '{"Percent":"80", "DurationSeconds":"300", "InstallDependencies":"True"}'
+            duration: PT2M
+          Targets:
+            Instances: instanceTargets            
