@@ -16,12 +16,16 @@ hidden: false
 
 ## Introduction
 
-In an architecture design, we want to keep the continuity of service to make sure it deliver highest business objective. That's how we usually describe the availability and reliability. Before we launch every deployment onto production environment for our external customer, a "pre-mortem" exercise to indentify and remove any potential source of failure will inprove the confidence to our operational objective. 
+A highly available service is one that is designed to continue the operation or function while undergoing one or more component failures. In some cases, the requirement is that the service must continue to sustain normal operational load under component failure and in other cases reduced service is acceptable, for example longer processing times but not complete outage.
 
-In this lab, we use standard 3-tier website as an example, and exericse fault injection toward the application layer, the EC2 instance in autoscaling group. Within different scenario, we want to practice how to perform a failure simulation and incident response. 
+Testing and stressing an application through different failure scenario allows developers, engineers, architects and business service owner to have confidence how the service will operate through different failure scenario.  It also allows run and playbooks, process, procedures, monitoring and event systems, alert and communication methods to be tested.
 
-With the propose to anticipate failure, we choose typical case High CPU Utilization status as an example, which it will force application service uncapable to take any external request, and lead to service unavailable. Target the expected response action from our design, we expect our EC2 autoscaling group can scale out and add instance capacity to keep the service continuity.
-To validate this mechanism, we inject a simulation event into the system and check if the expected response did take place. If response action not as expectation, then it is the potential point of failure, which need to be remediated immediately. To diagnose, we will first validate the simulation did take place from multiple observation angle, then check the responding mechanism is well configured. 
+In this lab, a 3-tier website application will be used to exercise fault injection into the application layer, the Amazon EC2 instances run in an autoscaling group. Using different scenarios, you will practice how to perform a failure simulation and incident response.
+Using the High CPU Utilization failure experiment from AWS Fault Injection Simulator against the web servers, the web application is not able to service external requests and this results in the service being unavailable.
+
+In the architecture an autoscaling group which is an AWS capability that can automatically add additional Amazon EC2 instances which are configured as web servers, the result is more web servers which should provide additional web request capacity to service requests.  By doing this, the expected outcome is that the web requests continue to be serviced as expected regardless of the high CPU event that is occurring.  Once the high CPU is resolved then the autoscaling group will reduce the number of Amazon EC2 instances either back to the baseline while still serving request at the desired performance expectation of the service.
+
+In the lab when testing the above scenario, you will observe that the autoscaling event does not occur as expected, this indicates that you have an issue and that under this type of condition the web application would fail to provide the expected service.   To diagnose what has occurred, you will first validate the fault simulation has taken place, then using the observation from the simulation you will check the responding mechanism are correctly configured.
 
 ## Services 
 * [AWS Fault Injection Simulator](https://docs.aws.amazon.com/fis/latest/userguide/what-is.html)
@@ -30,10 +34,10 @@ To validate this mechanism, we inject a simulation event into the system and che
 
 ## Goals: 
 
-* Anticipate failure - indentify potential source of failure
+* Anticipate failure - identify potential sources of failure
 * Use Fault Injection Simulator to organize the predefined failure and experiment
 * Simulate the unexpected incident and response for the incident
-* Define and validate workload metrics of healthness
+* Define and validate workload metrics in relation to application health
 
 ## Prerequisites:
 
